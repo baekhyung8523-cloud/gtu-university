@@ -1,39 +1,44 @@
-# Trinity Global University (TGU) 홈페이지 시안
+# Trinity Global University (TGU) 홈페이지 + 관리자 (Firebase)
 
-CIU(Columbia International University) 스타일 레퍼런스로 만든 정적 사이트입니다. 빌드 도구 없이 HTML/CSS/JS만 사용합니다.
+정적 사이트(HTML, CSS, JS)에 Firebase(Firestore + Auth)를 붙인 구조입니다. 서버 코드는 없고 GitHub Pages로 배포합니다.
 
-## 구조
-- index.html : 홈 (히어로, TGU란?, 총장 인사 요약, 갤러리 미리보기)
-- about.html : TGU 소개 (TGU란? / 어떤 대학인가 / 연혁 / 조직 / 교수진 / 이사회)
-- president.html : 총장 인사
-- programs.html : 프로그램 (MA, 박사, 졸업 논문, 명예박사)
-- gallery.html : 갤러리 (필터, 라이트박스)
-- contact.html : 연락처
-- css/style.css, js/main.js, images/ (사진은 가로 1600px 이하로 축소됨)
+## 연결 상태
+- Firebase 프로젝트: bible-school-os-miracle (BibleSchoolOS, Spark 무료 요금제, Firestore 서울 asia-northeast3)
+- Authentication: Google 로그인 사용 설정 완료
+- Firestore 보안 규칙: firebase/firestore.rules (게시 완료)
+- 웹 설정값: js/config.js (공개용 식별자이며 보안은 규칙이 담당)
 
-## 반응형 지원
-- 폭 320px(소형 폰) ~ 1920px(대형 모니터)까지 가로 넘침 없음 확인
-- 1100px 이하: 상단 메뉴가 햄버거 메뉴로 전환 (태블릿 가로·세로 포함)
-- 980px 이하(태블릿): 카드/표/인물 2열, 소개·총장 인사 1열
-- 720px 이하(폰): 1열, 표는 카드형으로 변환, 버튼 세로 배치, 갤러리 2열, 라이트박스 버튼 하단 배치
-- 터치 기기: 갤러리 설명 상시 표시, 버튼 최소 44px, 노치 기기 safe-area 대응, 모션 줄이기 설정 존중
+## 페이지
+- 공개: index, about, president, programs, board(게시판), gallery, contact(문의 폼), apply(입학지원, 강의신청)
+- 관리자: admin.html (Google 로그인 또는 이메일 로그인)
 
-## GitHub Pages 배포
-1. 이 폴더(tgu-site) 안의 내용을 저장소 루트에 올립니다.
-2. 저장소 Settings > Pages > Branch: main, / (root) 선택.
-3. 몇 분 뒤 https://<계정>.github.io/<저장소>/ 에서 확인합니다.
-(.nojekyll 파일이 포함되어 있습니다.)
+## 언어 (한국어 / English)
+- 헤더 오른쪽의 "한국어 | EN" 버튼으로 전환합니다. 선택은 브라우저에 저장되고, 처음 방문 시에는 브라우저 언어(한국어면 한국어)를 따릅니다.
+- 영어 문장이 원본이고 한국어는 js/i18n-ko.js 사전에서 적용됩니다. 문구를 고치려면 이 파일에서 같은 영어 문장의 한국어 값을 수정하세요.
+- 관리자가 입력하는 게시글, 강의명, 교수 정보 등 DB 내용은 입력한 언어 그대로 표시됩니다(번역되지 않음).
 
-## 의뢰인에게 확인할 내용
-1. 총장 사진: 총장.png(녹색 넥타이, 안경 없음)와 교수 1.png(가운, 안경)가 서로 다른 사람처럼 보입니다. 현재는 총장.png를 사용했습니다. 해상도가 낮아 화질이 거칩니다.
-2. 명예박사 수여일이 영문본과 한글 참고본이 다릅니다. 영문본 기준으로 게시했습니다.
-   - 이건영, 손신철, 박삼열: 영문 2022.3.11 / 한글 2021.12.14
-   - 유병국: 영문에 2023.10.13과 2024.3.8 두 번 등장(2024.3.8만 게시)
-   - 박성옥 박사 학위: 영문 Doctor of World Mission / 한글 D.Ed
-3. 교수진 표의 "President of TGA"는 TGU로 바꿨습니다. TGA(Trinity Global Academy)와 TGU의 관계를 확인해야 합니다. MA 과정 설명의 "TGA confers the MA degree"는 원문 그대로입니다.
-4. 이사회의 Kim, Yeon-Taek(International Chancellor of CCGU)과 교수진의 Dr. John Y. Kim(같은 직책)이 같은 사람인지 확인이 필요합니다.
-5. 영문 오타는 교정해서 반영했습니다(Theological, Distinguished, National, Administration, Liturgics, Character 등). 중복된 Dr. Yu Sung-Joon은 한 번만 넣었습니다.
-6. 행정 담당자 이메일과 휴대전화는 개인정보라 사이트에 넣지 않았습니다. 대표 전화(032-568-1560~1)만 게시했습니다.
-7. "Master Program graduates on October 18th 2026" 항목은 내용이 비어 있어 제외했습니다.
-8. 연혁은 제공된 자료(현수막, 수여일 목록)에서 확인되는 날짜만 넣었습니다. 추가 연혁이 있으면 about.html에 넣을 수 있습니다.
-9. 갤러리 사진 캡션은 사진에서 확인되는 내용만 썼습니다(2020.9.13 개원예배, 2022.9.19-23 행사). 나머지는 일반 설명입니다.
+## 관리자 기능
+대시보드, 문의, 입학지원(상태 변경, 메모, CSV), 강의신청(확정, 납부 상태, CSV), 구독자, 게시판 글쓰기, 갤러리(사진 여러 장 업로드), 강의 개설 관리, 학사 일정, 교수진, 사이트 설정(공지 배너, 입학 접수 열기/닫기, 연락처)
+
+## 관리자 로그인
+- ID 로그인: 로그인 화면에 `admin` 과 비밀번호를 입력합니다(내부적으로 admin@tgu-admin.com 계정). 계정은 Firebase 콘솔, Authentication, 사용자, 사용자 추가에서 직접 만듭니다.
+- Google 로그인: backhung8523@gmail.com
+- 신규 가입 허용이 켜져 있으므로 admin 계정을 만들기 전까지 다른 사람이 같은 이메일로 먼저 가입할 수 있습니다. 반드시 계정을 바로 만드세요.
+
+## 처음 한 번만 할 일
+1. GitHub Pages 주소가 정해지면 Firebase 콘솔 Authentication, 설정, 승인된 도메인에 `계정명.github.io`를 추가합니다. (없으면 관리자 Google 로그인이 막힙니다)
+2. admin.html에 backhung8523@gmail.com(Google 계정)으로 로그인합니다.
+3. 교수진, 갤러리, 강의 관리 화면에서 "초기 데이터 불러오기"를 한 번씩 누르면 현재 사이트 내용이 DB로 들어가 이후 관리자 화면에서 수정할 수 있습니다.
+4. (권장) Google Cloud 콘솔, API 및 서비스, 사용자 인증 정보에서 위 API 키의 HTTP 리퍼러를 사이트 주소로 제한합니다.
+
+## 관리자 이메일 변경
+firebase/firestore.rules 의 isAdmin() 이메일 목록을 수정한 뒤 Firebase 콘솔, Firestore, 규칙에 붙여넣고 게시합니다. 현재 목록: backhung8523@gmail.com, backhung65@gmail.com
+
+## 제한 사항 (무료 요금제)
+- Firebase Storage는 유료(Blaze) 요금제가 필요해 사용하지 않습니다. 갤러리 사진은 브라우저에서 줄여서(긴 변 1000px) Firestore에 저장합니다. 사진 1장은 약 900KB 이하여야 합니다.
+- 입학지원 서류 파일 업로드는 없습니다. 접수 후 입학처가 이메일로 서류를 받습니다.
+- 스팸 방지는 규칙 검증, 숨은 입력칸(honeypot), 최소 입력 시간으로 처리합니다. 접수 횟수 제한은 Firestore 규칙으로 할 수 없어서, 스팸이 늘면 Firebase App Check(reCAPTCHA)를 추가하세요.
+- 방문자가 제출한 데이터는 관리자만 읽을 수 있습니다. 방문자는 자신의 제출 내용을 다시 볼 수 없습니다.
+
+## 배포
+이 폴더 안의 내용을 저장소 루트에 올리고 Settings, Pages, Branch main, / (root)로 설정합니다.

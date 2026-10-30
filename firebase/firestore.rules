@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers ----
+    function isAdmin() {
+      return request.auth != null
+        && (
+          // Google accounts (verified by Google)
+          (request.auth.token.email_verified == true
+            && request.auth.token.email in ['backhung8523@gmail.com', 'backhung65@gmail.com'])
+          // ID/password account "admin" (created manually in the console; public sign-up must stay disabled)
+          || request.auth.token.email == 'admin@tgu-admin.com'
+        );
+    }
+    function req(d, k, max) { return d[k] is string && d[k].size() >= 1 && d[k].size() <= max; }
+    function opt(d, k, max) { return d.get(k, null) == null || (d[k] is string && d[k].size() <= max); }
+    function okEmail(d) { return d.email is string && d.email.size() <= 200 && d.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$'); }
+
+    // ---- public site content: published items readable by everyone, writable by admin ----
+    match /posts/{id}         { allow read: if resource.data.is_published == true || isAdmin(); allow write: if isAdmin(); }
+    match /gallery_items/{id} { allow read: if resource.data.is_published == true || isAdmin(); allow write: if isAdmin(); }
+    match /courses/{id}       { allow read: if resource.data.is_published == true || isAdmin(); allow write: if isAdmin(); }
+    match /events/{id}        { allow read: if resource.data.is_published == true || isAdmin(); allow write: if isAdmin(); }
+    match /faculty/{id}       { allow read: if resource.data.is_published == true || isAdmin(); allow write: if isAdmin(); }
+    match /site_settings/{id} { allow read: if true; allow write: if isAdmin(); }
+
+    // ---- inquiries: anyone can create (validated), only admin can read/update/delete ----
+    match /inquiries/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['name','email','phone','category','subject','message','consent','status','created_at'])
+        && req(request.resource.data, 'name', 100)
+        && okEmail(request.resource.data)
+        && opt(request.resource.data, 'phone', 50)
+        && request.resource.data.category in ['general','admission','course','mission','support','other']
+        && req(request.resource.data, 'subject', 200)
+        && req(request.resource.data, 'message', 5000)
+        && request.resource.data.consent == true
+        && request.resource.data.status == 'new'
+        && request.resource.data.created_at == request.time;
+    }
+
+    // ---- admission applications ----
+    match /admission_applications/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['program','start_term','full_name','korean_name','birth_date','nationality','residence_country','email','phone','address','church_org','position','denomination','ministry_years','highest_degree','school_name','gpa','recommender_name','recommender_contact','statement','heard_from','consent','status','created_at'])
+        && request.resource.data.program in ['ma_lay','ma','dmin','dmiss','edd','phd']
+        && req(request.resource.data, 'full_name', 150)
+        && okEmail(request.resource.data)
+        && opt(request.resource.data, 'start_term', 100) && opt(request.resource.data, 'korean_name', 100)
+        && opt(request.resource.data, 'birth_date', 20) && opt(request.resource.data, 'nationality', 100)
+        && opt(request.resource.data, 'residence_country', 100) && opt(request.resource.data, 'phone', 50)
+        && opt(request.resource.data, 'address', 500) && opt(request.resource.data, 'church_org', 200)
+        && opt(request.resource.data, 'position', 150) && opt(request.resource.data, 'denomination', 150)
+        && opt(request.resource.data, 'highest_degree', 150) && opt(request.resource.data, 'school_name', 200)
+        && opt(request.resource.data, 'gpa', 50) && opt(request.resource.data, 'recommender_name', 150)
+        && opt(request.resource.data, 'recommender_contact', 200) && opt(request.resource.data, 'statement', 6000)
+        && opt(request.resource.data, 'heard_from', 200)
+        && (request.resource.data.get('ministry_years', null) == null || (request.resource.data.ministry_years is number && request.resource.data.ministry_years >= 0 && request.resource.data.ministry_years <= 80))
+        && request.resource.data.consent == true
+        && request.resource.data.status == 'received'
+        && request.resource.data.created_at == request.time;
+    }
+
+    // ---- course registrations ----
+    match /course_registrations/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['course_id','course_title','name','email','phone','country','church_org','position','mode','message','consent','status','payment_status','created_at'])
+        && req(request.resource.data, 'name', 100)
+        && okEmail(request.resource.data)
+        && opt(request.resource.data, 'phone', 50) && opt(request.resource.data, 'country', 100)
+        && opt(request.resource.data, 'church_org', 200) && opt(request.resource.data, 'position', 150)
+        && opt(request.resource.data, 'message', 3000) && opt(request.resource.data, 'course_title', 200)
+        && request.resource.data.mode in ['onsite','online']
+        && request.resource.data.consent == true
+        && request.resource.data.status == 'pending'
+        && request.resource.data.payment_status == 'unpaid'
+        && request.resource.data.created_at == request.time
+        && (request.resource.data.get('course_id', null) == null
+            || (get(/databases/$(database)/documents/courses/$(request.resource.data.course_id)).data.status == 'open'
+                && get(/databases/$(database)/documents/courses/$(request.resource.data.course_id)).data.is_published == true));
+    }
+
+    // ---- newsletter / prayer partners (document id = lowercase email, so duplicates are rejected) ----
+    match /subscribers/{email} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['email','name','interest','consent','created_at'])
+        && okEmail(request.resource.data)
+        && request.resource.data.email == email
+        && opt(request.resource.data, 'name', 100)
+        && request.resource.data.interest in ['news','prayer','support']
+        && request.resource.data.consent == true
+        && request.resource.data.created_at == request.time;
+    }
+
+    // everything else is denied by default
+  }
+}
